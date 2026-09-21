@@ -1,5 +1,5 @@
 from datetime import date
-from transaction import Transaction
+from personal_finance.transaction import Transaction
 
 ### Test valid transaction
 def test_valid_transaction():
