@@ -235,3 +235,69 @@ def test_update_invalid_transaction():
     assert manager.transactions[1] is transaction 
 
 test_update_invalid_transaction()
+
+
+
+### Test: Delete existing transaction | Delete 
+def test_delete_existing_transaction():
+
+    manager = FinanceManager()
+
+    transaction = manager.add_transaction(
+        750,
+        "expense",
+        "Entertainment",
+        "Evening Movie",
+        date(2026, 9, 22)
+    )
+
+    deleted_transaction = manager.delete_transaction(1)
+    
+    assert transaction is deleted_transaction 
+    assert manager.get_transaction(1) is None 
+
+test_delete_existing_transaction()
+
+
+
+### Test: Delete nonexistent transaction | Delete
+def test_delete_nonexistent_transaction():
+
+    manager = FinanceManager()
+
+    result = manager.delete_transaction(999)
+
+    assert result is None 
+    assert manager.transactions == {}
+
+test_delete_nonexistent_transaction()
+
+
+
+### Test: Delete doesn't reuse transaction_id | Delete 
+def test_delete_does_not_reuse_transaction_id():
+
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        500,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 22)
+    )
+
+    manager.delete_transaction(1)
+
+    transaction2 = manager.add_transaction(
+        2000,
+        "expense",
+        "Gym",
+        "Workout",
+        date(2026, 9, 22)
+    )
+
+    assert transaction2.transaction_id == 2 
+    assert manager.next_transaction_id == 3 
+
+test_delete_does_not_reuse_transaction_id()
