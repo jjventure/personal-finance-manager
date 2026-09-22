@@ -102,4 +102,16 @@ class FinanceManager:
 
         self.transactions[transaction_id] = updated_transaction
         return updated_transaction 
+
     
+
+    ### Delete transaction | Delete 
+    def delete_transaction(self, transaction_id):
+
+        if transaction_id in self.transactions:
+            transaction = self.get_transaction(transaction_id)
+            del self.transactions[transaction_id] 
+            return transaction
+        
+        else:
+            return None   
