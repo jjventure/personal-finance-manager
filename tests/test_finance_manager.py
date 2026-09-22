@@ -301,3 +301,259 @@ def test_delete_does_not_reuse_transaction_id():
     assert manager.next_transaction_id == 3 
 
 test_delete_does_not_reuse_transaction_id()
+
+
+
+### Analytics 📊
+
+### Test: Empty Manager | calculate_income 
+def test_calculate_income_empty_manager():
+
+    manager = FinanceManager()
+
+    assert manager.calculate_income() == 0 
+
+test_calculate_income_empty_manager()
+
+
+
+### Test: Mixed Transactions | calculate_income 
+def test_calculate_income():
+
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        1000,
+        "income",
+        "Other",
+        "1 hour income",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        300,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        500,
+        "income",
+        "Other",
+        "0.5 hr income",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        200,
+        "expense",
+        "Transport",
+        "Cab charge",
+        date(2026, 9, 22)
+    )
+
+    assert manager.calculate_income() == 1500 
+
+test_calculate_income()
+
+
+
+### Test: Empty manager | calculate_expenses 
+def test_calculate_expenses_empty_manager():
+
+    manager = FinanceManager()
+
+    assert manager.calculate_expenses() == 0 
+
+test_calculate_expenses_empty_manager()
+
+
+
+### Test: Mixed transactions | calculate_expenses 
+def test_calculate_expenses():
+
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        1000,
+        "income",
+        "Other",
+        "1 hour income",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        300,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        500,
+        "income",
+        "Other",
+        "0.5 hr income",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        200,
+        "expense",
+        "Transport",
+        "Cab charge",
+        date(2026, 9, 22)
+    )
+
+    assert manager.calculate_expenses() == 500 
+
+test_calculate_expenses()
+
+
+
+### Test: Empty Manager | calculate_balance
+def test_calculate_balance_empty_manager():
+
+    manager = FinanceManager()
+
+    assert manager.calculate_balance() == 0 
+
+test_calculate_balance_empty_manager()
+
+
+
+### Test: Mixed Transactions | calculate_balance 
+def test_calculate_balance():
+
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        1000,
+        "income",
+        "Other",
+        "1 hour income",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        300,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        500,
+        "income",
+        "Other",
+        "0.5 hr income",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        200,
+        "expense",
+        "Transport",
+        "Cab charge",
+        date(2026, 9, 22)
+    )
+
+    assert manager.calculate_balance() == 1000 
+
+test_calculate_balance()
+
+
+
+### Test: Empty manager | spending_by_category()
+def test_spending_by_category_empty_manager():
+
+    manager = FinanceManager()
+
+    assert manager.spending_by_category() == {}
+
+test_spending_by_category_empty_manager()
+
+
+
+### Test: Mixed transactions | spending_by_category()
+def test_spending_by_category_mixed_transactions():
+
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        300,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        1000,
+        "income",
+        "Other",
+        "1 hour income",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        500,
+        "expense",
+        "Food",
+        "Breakfast",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        500,
+        "income",
+        "Other",
+        "0.5 hour income",
+        date(2026, 9, 22)
+    )
+
+    assert manager.spending_by_category() == {"Food": 800}
+
+test_spending_by_category_mixed_transactions()
+
+
+
+### Test: Multiple expense categories | spending_by_category()
+def test_spending_by_category():
+
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        300,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        500,
+        "expense",
+        "Food",
+        "Breakfast",
+        date(2026, 9, 22)
+    )
+
+    manager.add_transaction(
+        200,
+        "expense",
+        "Transport",
+        "Taxi Fare",
+        date(2026, 9, 22)
+    )
+
+    assert manager.spending_by_category() == {
+        "Food": 800,
+        "Transport": 200
+    }
+
+test_spending_by_category()
