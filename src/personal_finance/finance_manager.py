@@ -114,4 +114,58 @@ class FinanceManager:
             return transaction
         
         else:
-            return None   
+            return None
+
+
+
+    ### Analytics 📊
+
+    ### Calculate income 
+    def calculate_income(self):
+
+        total = 0
+
+        for transaction in self.transactions.values():
+            if transaction.transaction_type == "income":
+                total += transaction.amount 
+
+        return total 
+
+
+
+    ### Calculate expenses 
+    def calculate_expenses(self):
+
+        total = 0 
+
+        for transaction in self.transactions.values():
+            if transaction.transaction_type == "expense":
+                total += transaction.amount 
+
+        return total 
+
+
+
+    ### Calculate balance 
+    def calculate_balance(self):
+
+        return self.calculate_income() - self.calculate_expenses()
+
+
+
+    ### Spending by category 
+    def spending_by_category(self):
+
+        each_category_expense = {}
+
+        for transaction in self.transactions.values():
+
+            if transaction.transaction_type == "expense":
+
+                if transaction.category in each_category_expense:
+                    each_category_expense[transaction.category] += transaction.amount
+
+                else:
+                    each_category_expense[transaction.category] = transaction.amount 
+
+        return each_category_expense  
