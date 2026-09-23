@@ -168,4 +168,40 @@ class FinanceManager:
                 else:
                     each_category_expense[transaction.category] = transaction.amount 
 
-        return each_category_expense  
+        return each_category_expense
+
+
+
+    ### transactions --> JSON-friendly form 
+    def to_dict_list(self):
+
+        result = []
+
+        for transaction in self.transactions.values():
+            result.append(transaction.to_dict())
+
+        return result 
+
+
+
+    ### Save to storage
+    def save_to_storage(self, storage):
+
+        storage.save(self.to_dict_list()) 
+
+
+
+    ### Load from storage 
+    def load_from_storage(self, storage):
+
+        data = storage.load()
+        self.transactions = {}
+
+        for transaction_data in data:
+            transaction = Transaction.from_dict(transaction_data)
+            self.transactions[transaction.transaction_id] = transaction
+
+        if not self.transactions:
+            self.next_transaction_id = 1 
+        else:
+            self.next_transaction_id = max(self.transactions.keys()) + 1 
