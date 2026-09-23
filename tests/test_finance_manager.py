@@ -1,5 +1,9 @@
 from personal_finance.finance_manager import FinanceManager
 from datetime import date
+from pathlib import Path
+import tempfile 
+from personal_finance.storage import Storage
+from personal_finance.transaction import Transaction 
 
 
 
@@ -557,3 +561,229 @@ def test_spending_by_category():
     }
 
 test_spending_by_category()
+
+
+
+### Test: to_dict_list | Empty 
+def test_to_dict_list_empty():
+
+    manager = FinanceManager()
+
+    result = manager.to_dict_list()
+
+    assert result == []
+
+test_to_dict_list_empty()
+
+
+
+### Test: to_dict_list | single transaction | transaction --> JSON-friendly form
+def test_to_dict_list_single_transaction():
+
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        500,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 23)
+    )
+
+    result = manager.to_dict_list()
+
+    assert result == [
+        {
+            "transaction_id": 1,
+            "amount": 500,
+            "transaction_type": "expense",
+            "category": "Food",
+            "description": "Dinner",
+            "date": "2026-09-23"
+        }
+    ]
+
+test_to_dict_list_single_transaction()
+
+
+
+### Test: to_dict_list | multiple transactions | transactions --> JSON-friendly form
+def test_to_dict_list_multiple_transactions():
+
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        1000, 
+        "income",
+        "Other",
+        "per hour income",
+        date(2026, 9, 23)
+    )
+
+    manager.add_transaction(
+        500,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 23)
+    )
+
+    result = manager.to_dict_list()
+
+    assert result == [
+        {
+    "transaction_id": 1,
+    "amount": 1000,
+    "transaction_type": "income",
+    "category": "Other",
+    "description": "per hour income",
+    "date": "2026-09-23"
+        },
+
+        {
+    "transaction_id": 2,
+    "amount": 500,
+    "transaction_type": "expense",
+    "category": "Food",
+    "description": "Dinner",
+    "date": "2026-09-23"
+        }
+    ]
+
+test_to_dict_list_multiple_transactions()
+
+
+
+### Test: save_to_storage | save 
+def test_save_to_storage():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = Path(temp_dir) / "transactions.json"
+        storage = Storage(file_path)
+        manager = FinanceManager()
+        manager.add_transaction(
+            500,
+            "expense",
+            "Food",
+            "Dinner",
+            date(2026, 9, 23)
+        )
+        manager.save_to_storage(storage)
+
+        assert storage.file_path.exists()
+
+        loaded_data = storage.load()
+
+        assert loaded_data == [
+            {
+                "transaction_id": 1,
+                "amount": 500,
+                "transaction_type": "expense",
+                "category": "Food",
+                "description": "Dinner",
+                "date": "2026-09-23"
+            }
+        ]
+
+test_save_to_storage()
+
+
+
+### Test: load_from_storage() | Empty storage 
+def test_load_from_storage():
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = Path(temp_dir) / "transactions.json"
+        storage = Storage(file_path)
+        manager = FinanceManager()
+        manager.load_from_storage(storage)
+
+        assert manager.transactions == {} 
+        assert manager.next_transaction_id == 1 
+
+test_load_from_storage()
+
+
+
+### Test: load_from_storage() | Load existing transactions 
+def test_load_from_storage_multiple_transactions():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = Path(temp_dir) / "transactions.json"
+        storage = Storage(file_path)
+        manager = FinanceManager()
+
+        data = [
+        {
+        "transaction_id": 1,
+        "amount": 1000,
+        "transaction_type": "income",
+        "category": "Other",
+        "description": "Salary",
+        "date": "2026-09-20"
+        },
+
+        {
+        "transaction_id": 2,
+        "amount": 500,
+        "transaction_type": "expense",
+        "category": "Food",
+        "description": "Dinner",
+        "date": "2026-09-21"
+        },
+
+        {
+        "transaction_id": 5,
+        "amount": 300,
+        "transaction_type": "expense",
+        "category": "Transport",
+        "description": "Bus",
+        "date": "2026-09-22"
+        }
+            ]
+
+        storage.save(data)
+
+        manager.load_from_storage(storage)
+
+        assert len(manager.transactions) == 3 
+        assert list(manager.transactions.keys()) == [1, 2, 5]
+        assert manager.next_transaction_id == 6 
+        assert isinstance(manager.transactions[2], Transaction)
+
+test_load_from_storage_multiple_transactions()
+
+
+
+### Test: Save → Fresh Manager → Load → Add
+def test_save_load_and_continue():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = Path(temp_dir) / "transactions.json"
+        storage = Storage(file_path)
+
+        manager = FinanceManager()
+
+        manager.add_transaction(
+            500,
+            "expense",
+            "Food",
+            "Dinner",
+            date(2026, 9, 23)
+        )
+
+        manager.save_to_storage(storage)
+
+        new_manager = FinanceManager()
+
+        new_manager.load_from_storage(storage)
+
+        new_transaction = new_manager.add_transaction(
+            1000,
+            "income",
+            "Other",
+            "Salary",
+            date(2026, 9, 23)
+        )
+
+        assert new_transaction.transaction_id == 2 
+        assert len(new_manager.transactions) == 2 
+
+test_save_load_and_continue()

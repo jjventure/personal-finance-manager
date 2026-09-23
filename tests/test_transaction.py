@@ -169,3 +169,55 @@ def test_description_whitespace_only():
     assert error_occurred 
 
 test_description_whitespace_only()
+
+
+
+### Test: to_dict | Convert transaction to dictionary
+def test_to_dict():
+
+    transaction = Transaction(
+        1,
+        500,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 23)
+    )
+
+    result = transaction.to_dict()
+
+    assert result == {
+    "transaction_id": 1,
+    "amount": 500,
+    "transaction_type": "expense",
+    "category": "Food",
+    "description": "Dinner",
+    "date": "2026-09-23"
+}
+
+test_to_dict()
+
+
+
+### Test: from_dict() | Convert dictionary to transaction
+def test_from_dict():
+
+    data = {
+    "transaction_id": 1,
+    "amount": 500,
+    "transaction_type": "expense",
+    "category": "Food",
+    "description": "Dinner",
+    "date": "2026-09-23"
+}
+
+    transaction = Transaction.from_dict(data)
+
+    assert transaction.transaction_id == 1 
+    assert transaction.amount == 500 
+    assert transaction.transaction_type == "expense"
+    assert transaction.category == "Food"
+    assert transaction.description == "Dinner"
+    assert transaction.date == date(2026, 9, 23)
+
+test_from_dict()

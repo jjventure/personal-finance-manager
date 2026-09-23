@@ -63,6 +63,7 @@ class Transaction:
         self.date = date 
         self.validate()
 
+
     ### validate method 
     def validate(self):
 
@@ -119,3 +120,29 @@ class Transaction:
         if not isinstance(self.date, date):
             raise TypeError("Date must be a valid Python date object.")
 
+
+    ###  Convert transaction to dictionary 
+    def to_dict(self):
+
+        return {
+            "transaction_id": self.transaction_id,
+            "amount": self.amount,
+            "transaction_type": self.transaction_type,
+            "category": self.category,
+            "description": self.description,
+            "date": self.date.isoformat()
+        }
+
+
+    ### Convert dictionary to transaction 
+    @classmethod 
+    def from_dict(cls, data):   # cls represents the Transaction class itself
+
+        return cls(
+            data["transaction_id"],
+            data["amount"],
+            data["transaction_type"],
+            data["category"],
+            data["description"],
+            date.fromisoformat(data["date"])
+        )
