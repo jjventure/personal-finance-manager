@@ -1,46 +1,11 @@
-''' 
+from datetime import date
 
-FinanceManager will generate the ID and pass it to Transaction.
-
-Transaction
-│
-├── transaction_id
-│   └── positive integer, unique
-│
-├── amount
-│   └── number > 0
-│
-├── transaction_type
-│   └── "income" or "expense"
-│
-├── category
-│   └── predefined category:
-            Food
-            Transport
-            Entertainment
-            Shopping
-            Bills
-            Health
-            Education
-            Gym
-            Other
-│
-├── description
-│   └── optional string
-│
-└── date
-    └── valid Python date object
-
-'''
-
-from datetime import date 
 
 class Transaction:
+    """Represents a single financial transaction."""
 
-    # allowed transaction_types
     ALLOWED_TYPES = ("income", "expense")
 
-    # predefined categories
     CATEGORIES = [
         "Food",
         "Transport",
@@ -50,79 +15,80 @@ class Transaction:
         "Health",
         "Education",
         "Gym",
-        "Other"
+        "Other",
     ]
 
-    ### constructor 
-    def __init__(self, transaction_id, amount, transaction_type, category, description, date):
-        self.transaction_id = transaction_id    # FinanceManager will handle generating the ID later 
-        self.amount = amount 
-        self.transaction_type = transaction_type 
-        self.category = category 
-        self.description = description 
-        self.date = date 
+    def __init__(
+        self,
+        transaction_id,
+        amount,
+        transaction_type,
+        category,
+        description,
+        date,
+    ):
+        self.transaction_id = transaction_id
+        self.amount = amount
+        self.transaction_type = transaction_type
+        self.category = category
+        self.description = description
+        self.date = date
+
         self.validate()
 
-
-    ### validate method 
     def validate(self):
+        """Validate and normalize transaction data."""
 
-        ## Transaction ID must be a positive integer
+        # Transaction ID must be a positive integer.
         if not isinstance(self.transaction_id, int) or self.transaction_id <= 0:
             raise ValueError("Transaction ID should be a positive integer.")
 
-
-        ## amount must be greater than 0.
+        # Amount must be greater than 0.
         if not isinstance(self.amount, (int, float)) or self.amount <= 0:
             raise ValueError("Amount should be a positive number.")
 
-
-        ## transaction_type must be either income or expense 
+        # Transaction type must be income or expense.
         if not isinstance(self.transaction_type, str):
             raise TypeError("Transaction type must be in string format.")
-    
+
         self.transaction_type = self.transaction_type.lower()
 
         if self.transaction_type not in self.ALLOWED_TYPES:
-            raise ValueError("Transaction type must be either 'income' or 'expense'.")
+            raise ValueError(
+                "Transaction type must be either 'income' or 'expense'."
+            )
 
-
-        ## handle case-insensitive category input.
+        # Category must match one of the predefined categories.
         if not isinstance(self.category, str):
             raise TypeError("Category must be in string format.")
 
-        for each_category in self.CATEGORIES:
-            if self.category.lower() == each_category.lower():
-                self.category = each_category 
-                break 
-        # The else executes only if the loop finishes without hitting break.
+        for allowed_category in self.CATEGORIES:
+            if self.category.lower() == allowed_category.lower():
+                self.category = allowed_category
+                break
         else:
-            raise ValueError("This category doesn't exist.")    
+            raise ValueError("This category doesn't exist.")
 
-
-        ## description is optional, but if provided, it should be a string of reasonable length.
-        # No description --> accept ✅
+        # Description is optional.
         if self.description is not None:
-
-            # Must be a string
             if not isinstance(self.description, str):
                 raise TypeError("Description only allows text.")
-            
-            # Empty string is allowed
+
+            # Empty string is allowed.
             if self.description != "":
                 self.description = self.description.strip()
 
-                # Whitespace-only is not allowed
                 if self.description == "":
-                    raise ValueError("Description cannot contain only whitespace.")
+                    raise ValueError(
+                        "Description cannot contain only whitespace."
+                    )
 
-        ## Date validation 
+        # Date must be a Python date object.
         if not isinstance(self.date, date):
             raise TypeError("Date must be a valid Python date object.")
 
-
-    ###  Convert transaction to dictionary 
     def to_dict(self):
+        """Convert the transaction into a JSON-friendly dictionary."""
 
         return {
             "transaction_id": self.transaction_id,
@@ -130,13 +96,12 @@ class Transaction:
             "transaction_type": self.transaction_type,
             "category": self.category,
             "description": self.description,
-            "date": self.date.isoformat()
+            "date": self.date.isoformat(),
         }
 
-
-    ### Convert dictionary to transaction 
-    @classmethod 
-    def from_dict(cls, data):   # cls represents the Transaction class itself
+    @classmethod
+    def from_dict(cls, data):
+        """Create a Transaction from a dictionary."""
 
         return cls(
             data["transaction_id"],
@@ -144,5 +109,5 @@ class Transaction:
             data["transaction_type"],
             data["category"],
             data["description"],
-            date.fromisoformat(data["date"])
+            date.fromisoformat(data["date"]),
         )
