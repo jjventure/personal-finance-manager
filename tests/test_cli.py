@@ -6,7 +6,7 @@ from unittest.mock import patch
 from personal_finance.cli import CLI
 from personal_finance.finance_manager import FinanceManager
 from personal_finance.storage import Storage
-
+import pytest
 
 def create_cli():
     manager = FinanceManager()
@@ -448,3 +448,93 @@ def test_exit_saves_transactions():
             cli.run()
 
         mock_save.assert_called_once_with()
+
+
+# --- Additional input validation tests ---
+
+
+@pytest.mark.parametrize(
+    "invalid_amount",
+    ["nan", "inf", "-inf", "0", "-100"],
+)
+def test_add_transaction_rejects_invalid_amount(invalid_amount):
+    manager, cli, temp_dir = create_cli()
+
+    with patch(
+        "builtins.input",
+        side_effect=[
+            invalid_amount,
+            "500",
+            "expense",
+            "Food",
+            "Dinner",
+            "2026-09-25",
+        ],
+    ):
+        cli.add_transaction()
+
+    assert len(manager.transactions) == 1
+    assert manager.transactions[1].amount == 500.0
+
+
+def test_add_transaction_retries_after_invalid_amount():
+    manager, cli, temp_dir = create_cli()
+
+    with patch(
+        "builtins.input",
+        side_effect=[
+            "abc",
+            "500",
+            "expense",
+            "Food",
+            "Dinner",
+            "2026-09-25",
+        ],
+    ):
+        cli.add_transaction()
+
+    assert len(manager.transactions) == 1
+    assert manager.transactions[1].amount == 500.0
+
+
+# --- Additional storage error tests ---
+
+
+def test_save_handles_storage_error():
+    manager, cli, temp_dir = create_cli()
+
+    with patch.object(
+        manager,
+        "save_to_storage",
+        side_effect=OSError("Disk unavailable"),
+    ):
+        with patch("builtins.print") as mock_print:
+            result = cli.save()
+
+    assert result is False
+    mock_print.assert_called_once_with(
+        "Could not save transactions: Disk unavailable"
+    )
+
+
+def test_exit_does_not_close_after_save_failure():
+    manager, cli, temp_dir = create_cli()
+
+    with patch.object(
+        manager,
+        "save_to_storage",
+        side_effect=[
+            OSError("Disk unavailable"),
+            None,
+        ],
+    ) as mock_save:
+        with patch(
+            "builtins.input",
+            side_effect=["7", "7"],
+        ):
+            with patch("builtins.print") as mock_print:
+                cli.run()
+
+    assert mock_save.call_count == 2
+    mock_print.assert_any_call("Unable to exit safely. Please try saving again.")
+    mock_print.assert_any_call("Goodbye!")

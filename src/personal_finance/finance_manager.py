@@ -65,21 +65,23 @@ class FinanceManager:
             return None
 
         new_amount = amount if amount is not None else transaction.amount
+
         new_transaction_type = (
             transaction_type
             if transaction_type is not None
             else transaction.transaction_type
         )
+
         new_category = (
-            category
-            if category is not None
-            else transaction.category
+            category if category is not None else transaction.category
         )
+
         new_description = (
             description
             if description is not None
             else transaction.description
         )
+
         new_date = date if date is not None else transaction.date
 
         updated_transaction = Transaction(
@@ -174,15 +176,29 @@ class FinanceManager:
         storage.save(self.to_dict_list())
 
     def load_from_storage(self, storage):
-        """Load transactions from storage."""
+        """Load and validate transactions before replacing existing data."""
 
         data = storage.load()
 
-        self.transactions = {}
+        if not isinstance(data, list):
+            raise ValueError("Stored transaction data must be a list.")
+
+        loaded_transactions = {}
 
         for transaction_data in data:
             transaction = Transaction.from_dict(transaction_data)
-            self.transactions[transaction.transaction_id] = transaction
+
+            transaction_id = transaction.transaction_id
+
+            if transaction_id in loaded_transactions:
+                raise ValueError(
+                    f"Duplicate transaction ID found: {transaction_id}."
+                )
+
+            loaded_transactions[transaction_id] = transaction
+
+        # Replace existing data only after every record is validated.
+        self.transactions = loaded_transactions
 
         if not self.transactions:
             self.next_transaction_id = 1
@@ -196,7 +212,7 @@ class FinanceManager:
     def search_transactions(self, keyword):
         """Search transactions by category or description."""
 
-        keyword = keyword.lower()
+        keyword = keyword.strip().lower()
         result = []
 
         for transaction in self.transactions.values():
@@ -213,7 +229,7 @@ class FinanceManager:
     def filter_by_category(self, category):
         """Return transactions matching a category."""
 
-        category = category.lower()
+        category = category.strip().lower()
 
         return [
             transaction
@@ -224,7 +240,7 @@ class FinanceManager:
     def filter_by_type(self, transaction_type):
         """Return transactions matching a transaction type."""
 
-        transaction_type = transaction_type.lower()
+        transaction_type = transaction_type.strip().lower()
 
         return [
             transaction

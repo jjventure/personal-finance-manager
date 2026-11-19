@@ -2,26 +2,26 @@
 
 ## Overview
 
-The Personal Finance Manager is a Python-based application for tracking personal finances by recording income and expenses, while providing summaries and insights into spending and overall balance.
+Personal Finance Manager is a Python-based command-line application for tracking personal finances. It allows users to record income and expenses, manage transactions, and monitor their overall financial position through balance calculations and spending summaries.
 
 ## Features
 
-* Add income and expense transactions
-* View all transactions
-* Search transactions by category or description
-* Filter transactions by category or type
-* Calculate total income, expenses, and current balance
-* View spending summaries by category
-* Save and load transactions using JSON
-* Automatically save transactions when exiting
-* Command-line interface (CLI)
+- Add income and expense transactions
+- View all recorded transactions
+- Search transactions by category or description
+- Filter transactions by category or transaction type
+- Calculate total income, expenses, and current balance
+- View spending summaries by category
+- Save and load transactions using JSON
+- Automatically save transactions when exiting
+- Command-line interface (CLI)
 
 ## Tech Stack
 
-* Python 3.12.1
-* pytest
-* JSON
-* Git & GitHub
+- **Python 3.12+** — Application development
+- **pytest** — Automated testing
+- **JSON** — Local data storage
+- **Git & GitHub** — Version control and project hosting
 
 ## Project Structure
 
@@ -41,17 +41,19 @@ personal-finance-manager/
 │   ├── test_storage.py
 │   ├── test_cli.py
 │   └── test_main.py
-├── data/
+├── docs/
+│   └── Design.png
 ├── .gitignore
 ├── pyproject.toml
 └── README.md
 ```
 
-* `src/personal_finance/` — application source code
-* `tests/` — automated tests for the application
-* `data/` — local storage for transaction data
-* `pyproject.toml` — project and package configuration
-* `.gitignore` — files and directories excluded from Git
+- `src/personal_finance/` — Application source code
+- `tests/` — Automated tests
+- `docs/` — Project documentation and design resources
+- `data/` — Local transaction storage (created at runtime and excluded from Git)
+- `pyproject.toml` — Project and package configuration
+- `.gitignore` — Specifies files and directories excluded from Git
 
 ## Installation
 
@@ -82,15 +84,15 @@ source .venv/Scripts/activate
 .venv\Scripts\activate
 ```
 
-### 4. Install the project
+### 4. Install the project and development dependencies
 
 ```bash
-pip install -e .
+python -m pip install -e ".[dev]"
 ```
 
 ## Usage
 
-Run the application with:
+Start the application with:
 
 ```bash
 python -m personal_finance.main
@@ -109,13 +111,15 @@ The application provides a command-line menu for managing transactions:
 7. Exit
 ```
 
-Transactions are stored locally as JSON data in:
+### Data Storage
+
+Transactions are stored locally in JSON format at:
 
 ```text
 data/transactions.json
 ```
 
-The `data/` directory is excluded from Git so personal financial data is not committed to the repository.
+The `data/` directory is excluded from Git to prevent personal financial data from being committed to the repository.
 
 ## Testing
 
@@ -127,23 +131,29 @@ Run the complete test suite with:
 python -m pytest
 ```
 
-The v1.0.0 test suite contains **73 tests**, covering transactions, finance management, storage, CLI functionality, and application startup.
+The v1.0.0 test suite contains **97 automated tests**, covering:
+
+- Transaction validation and functionality
+- Finance management and calculations
+- JSON storage and data handling
+- CLI functionality
+- Application startup
 
 ## Future Roadmap
 
-Potential future versions may expand the project with:
+Potential future improvements include:
 
-* Pandas-based financial analysis
-* Matplotlib-based visualizations
-* SQL database storage
-* Machine learning features
-* FastAPI backend
-* Docker containerization
-* Cloud deployment
-* Web-based financial dashboard
+- Pandas-based financial analysis
+- Matplotlib-based data visualizations
+- SQL database integration
+- Machine learning features
+- FastAPI backend
+- Docker containerization
+- Cloud deployment
+- Web-based financial dashboard
 
 ## Version
 
 **v1.0.0**
 
-The v1.0.0 release provides a functional command-line personal finance manager with transaction management, financial analytics, JSON persistence, and automated testing.
+The v1.0.0 release provides a functional command-line personal finance manager with transaction management, financial calculations, JSON persistence, and automated testing.

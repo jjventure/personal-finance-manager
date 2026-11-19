@@ -834,3 +834,96 @@ def test_filter_by_category_no_match():
     results = manager.filter_by_category("Shopping")
 
     assert results == []
+
+
+def test_load_from_storage_rejects_duplicate_ids():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = Path(temp_dir) / "transactions.json"
+        storage = Storage(file_path)
+        manager = FinanceManager()
+
+        data = [
+            {
+                "transaction_id": 1,
+                "amount": 500,
+                "transaction_type": "expense",
+                "category": "Food",
+                "description": "Dinner",
+                "date": "2026-09-20",
+            },
+            {
+                "transaction_id": 1,
+                "amount": 800,
+                "transaction_type": "expense",
+                "category": "Shopping",
+                "description": "Shoes",
+                "date": "2026-09-21",
+            },
+        ]
+
+        storage.save(data)
+
+        with pytest.raises(ValueError, match="Duplicate transaction ID"):
+            manager.load_from_storage(storage)
+
+        assert manager.transactions == {}
+        assert manager.next_transaction_id == 1
+
+
+def test_load_from_storage_preserves_existing_data_on_failure():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = Path(temp_dir) / "transactions.json"
+        storage = Storage(file_path)
+        manager = FinanceManager()
+
+        original_transaction = manager.add_transaction(
+            1000,
+            "income",
+            "Other",
+            "Salary",
+            date(2026, 9, 20),
+        )
+
+        data = [
+            {
+                "transaction_id": 1,
+                "amount": 500,
+                "transaction_type": "expense",
+                "category": "Food",
+                "description": "Dinner",
+                "date": "2026-09-20",
+            },
+            {
+                "transaction_id": 2,
+                "amount": -800,
+                "transaction_type": "expense",
+                "category": "Shopping",
+                "description": "Shoes",
+                "date": "2026-09-21",
+            },
+        ]
+
+        storage.save(data)
+
+        with pytest.raises(ValueError):
+            manager.load_from_storage(storage)
+
+        assert len(manager.transactions) == 1
+        assert manager.transactions[1] is original_transaction
+        assert manager.next_transaction_id == 2
+
+
+def test_search_and_filter_ignore_surrounding_whitespace():
+    manager = FinanceManager()
+
+    manager.add_transaction(
+        500,
+        "expense",
+        "Food",
+        "Dinner",
+        date(2026, 9, 25),
+    )
+
+    assert len(manager.search_transactions("  food  ")) == 1
+    assert len(manager.filter_by_category("  FOOD  ")) == 1
+    assert len(manager.filter_by_type("  EXPENSE  ")) == 1

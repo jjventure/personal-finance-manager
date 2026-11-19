@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime
+import math
 
 
 class Transaction:
@@ -40,18 +41,27 @@ class Transaction:
         """Validate and normalize transaction data."""
 
         # Transaction ID must be a positive integer.
-        if not isinstance(self.transaction_id, int) or self.transaction_id <= 0:
+        if (
+            isinstance(self.transaction_id, bool)
+            or not isinstance(self.transaction_id, int)
+            or self.transaction_id <= 0
+        ):
             raise ValueError("Transaction ID should be a positive integer.")
 
-        # Amount must be greater than 0.
-        if not isinstance(self.amount, (int, float)) or self.amount <= 0:
-            raise ValueError("Amount should be a positive number.")
+        # Amount must be a finite positive number.
+        if (
+            isinstance(self.amount, bool)
+            or not isinstance(self.amount, (int, float))
+            or not math.isfinite(self.amount)
+            or self.amount <= 0
+        ):
+            raise ValueError("Amount should be a finite positive number.")
 
         # Transaction type must be income or expense.
         if not isinstance(self.transaction_type, str):
             raise TypeError("Transaction type must be in string format.")
 
-        self.transaction_type = self.transaction_type.lower()
+        self.transaction_type = self.transaction_type.strip().lower()
 
         if self.transaction_type not in self.ALLOWED_TYPES:
             raise ValueError(
@@ -61,6 +71,8 @@ class Transaction:
         # Category must match one of the predefined categories.
         if not isinstance(self.category, str):
             raise TypeError("Category must be in string format.")
+
+        self.category = self.category.strip()
 
         for allowed_category in self.CATEGORIES:
             if self.category.lower() == allowed_category.lower():
@@ -74,7 +86,6 @@ class Transaction:
             if not isinstance(self.description, str):
                 raise TypeError("Description only allows text.")
 
-            # Empty string is allowed.
             if self.description != "":
                 self.description = self.description.strip()
 
@@ -83,8 +94,10 @@ class Transaction:
                         "Description cannot contain only whitespace."
                     )
 
-        # Date must be a Python date object.
-        if not isinstance(self.date, date):
+        # Date must be a date object, not a datetime object.
+        if not isinstance(self.date, date) or isinstance(
+            self.date, datetime
+        ):
             raise TypeError("Date must be a valid Python date object.")
 
     def to_dict(self):
@@ -103,11 +116,35 @@ class Transaction:
     def from_dict(cls, data):
         """Create a Transaction from a dictionary."""
 
+        if not isinstance(data, dict):
+            raise TypeError("Transaction data must be a dictionary.")
+
+        required_fields = {
+            "transaction_id",
+            "amount",
+            "transaction_type",
+            "category",
+            "description",
+            "date",
+        }
+
+        missing_fields = required_fields - data.keys()
+
+        if missing_fields:
+            raise ValueError(
+                f"Missing transaction fields: {', '.join(sorted(missing_fields))}"
+            )
+
+        try:
+            transaction_date = date.fromisoformat(data["date"])
+        except (TypeError, ValueError) as error:
+            raise ValueError("Transaction date must use YYYY-MM-DD format.") from error
+
         return cls(
             data["transaction_id"],
             data["amount"],
             data["transaction_type"],
             data["category"],
             data["description"],
-            date.fromisoformat(data["date"]),
+            transaction_date,
         )

@@ -149,3 +149,60 @@ def test_from_dict():
     assert transaction.category == "Food"
     assert transaction.description == "Dinner"
     assert transaction.date == date(2026, 9, 23)
+
+
+def test_boolean_amount_rejected():
+    with pytest.raises(ValueError):
+        Transaction(
+            1, True, "expense", "Food", "Dinner", date(2026, 9, 19)
+        )
+
+
+@pytest.mark.parametrize("amount", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_amount_rejected(amount):
+    with pytest.raises(ValueError):
+        Transaction(
+            1, amount, "expense", "Food", "Dinner", date(2026, 9, 19)
+        )
+
+
+def test_boolean_transaction_id_rejected():
+    with pytest.raises(ValueError):
+        Transaction(
+            True, 500, "expense", "Food", "Dinner", date(2026, 9, 19)
+        )
+
+
+def test_datetime_rejected():
+    from datetime import datetime
+
+    with pytest.raises(TypeError):
+        Transaction(
+            1,
+            500,
+            "expense",
+            "Food",
+            "Dinner",
+            datetime(2026, 9, 19, 12, 30),
+        )
+
+
+def test_category_whitespace_normalized():
+    transaction = Transaction(
+        1, 500, "expense", " Food ", "Dinner", date(2026, 9, 19)
+    )
+
+    assert transaction.category == "Food"
+
+
+def test_from_dict_missing_field():
+    data = {
+        "transaction_id": 1,
+        "amount": 500,
+        "transaction_type": "expense",
+        "category": "Food",
+        "description": "Dinner",
+    }
+
+    with pytest.raises(ValueError, match="Missing transaction fields"):
+        Transaction.from_dict(data)

@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 
 
 class CLI:
@@ -28,9 +29,10 @@ class CLI:
             elif choice == "6":
                 self.save()
             elif choice == "7":
-                self.save()
-                print("Goodbye!")
-                break
+                if self.save():
+                    print("Goodbye!")
+                    break
+                print("Unable to exit safely. Please try saving again.")
             else:
                 print("Invalid choice. Please select a number from 1 to 7.")
 
@@ -54,7 +56,13 @@ class CLI:
         while True:
             try:
                 amount = float(input("Enter amount: "))
+
+                if not math.isfinite(amount) or amount <= 0:
+                    print("Invalid amount. Please enter a finite positive number.")
+                    continue
+
                 break
+
             except ValueError:
                 print("Invalid amount. Please enter a number.")
 
@@ -72,6 +80,7 @@ class CLI:
                     "%Y-%m-%d",
                 ).date()
                 break
+
             except ValueError:
                 print("Invalid date. Please use YYYY-MM-DD.")
 
@@ -83,6 +92,7 @@ class CLI:
                 description,
                 transaction_date,
             )
+
         except (ValueError, TypeError) as error:
             print(f"Could not add transaction: {error}")
             return
@@ -129,7 +139,6 @@ class CLI:
         """Search transactions by category or description."""
 
         keyword = input("Enter search keyword: ")
-
         results = self.manager.search_transactions(keyword)
 
         if not results:
@@ -154,7 +163,6 @@ class CLI:
         """Filter transactions by category."""
 
         category = input("Enter category: ")
-
         results = self.manager.filter_by_category(category)
 
         if not results:
@@ -169,7 +177,6 @@ class CLI:
         transaction_type = input(
             "Enter transaction type (income/expense): "
         )
-
         results = self.manager.filter_by_type(transaction_type)
 
         if not results:
@@ -205,7 +212,14 @@ class CLI:
             print(f"{category}: ₹{amount:.2f}")
 
     def save(self):
-        """Save transactions to storage."""
+        """Save transactions to storage and report the result."""
 
-        self.manager.save_to_storage(self.storage)
+        try:
+            self.manager.save_to_storage(self.storage)
+
+        except (OSError, TypeError, ValueError) as error:
+            print(f"Could not save transactions: {error}")
+            return False
+
         print("Transactions saved successfully!")
+        return True

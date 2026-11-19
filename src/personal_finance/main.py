@@ -1,4 +1,4 @@
-from pathlib import Path 
+from pathlib import Path
 
 from personal_finance.storage import Storage
 from personal_finance.finance_manager import FinanceManager
@@ -12,7 +12,12 @@ def main():
     storage = Storage(storage_path)
     manager = FinanceManager()
 
-    manager.load_from_storage(storage)
+    try:
+        manager.load_from_storage(storage)
+
+    except (OSError, ValueError, TypeError) as error:
+        print(f"Could not load saved transactions: {error}")
+        return
 
     cli = CLI(manager, storage)
     cli.run()
