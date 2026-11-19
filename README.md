@@ -22,11 +22,15 @@ Personal Finance Manager is a Python-based command-line application for tracking
 - **pytest** — Automated testing
 - **JSON** — Local data storage
 - **Git & GitHub** — Version control and project hosting
+- **GitHub Actions** — Continuous integration (CI)
 
 ## Project Structure
 
 ```text
 personal-finance-manager/
+├── .github/
+│   └── workflows/
+│       └── tests.yml
 ├── src/
 │   └── personal_finance/
 │       ├── __init__.py
@@ -51,6 +55,7 @@ personal-finance-manager/
 - `src/personal_finance/` — Application source code
 - `tests/` — Automated tests
 - `docs/` — Project documentation and design resources
+- `.github/workflows/` — GitHub Actions CI configuration
 - `data/` — Local transaction storage (created at runtime and excluded from Git)
 - `pyproject.toml` — Project and package configuration
 - `.gitignore` — Specifies files and directories excluded from Git
@@ -131,13 +136,23 @@ Run the complete test suite with:
 python -m pytest
 ```
 
-The v1.0.0 test suite contains **97 automated tests**, covering:
+The v1.0.1 test suite contains **97 automated tests**, covering:
 
 - Transaction validation and functionality
 - Finance management and calculations
 - JSON storage and data handling
 - CLI functionality
 - Application startup
+
+### Continuous Integration
+
+GitHub Actions automatically runs the test suite when code is pushed to the `main` branch or when a pull request targets `main`.
+
+The workflow:
+
+- Sets up Python 3.12
+- Installs project and development dependencies
+- Executes the complete pytest test suite
 
 ## Future Roadmap
 
@@ -154,6 +169,6 @@ Potential future improvements include:
 
 ## Version
 
-**v1.0.0**
+**v1.0.1**
 
-The v1.0.0 release provides a functional command-line personal finance manager with transaction management, financial calculations, JSON persistence, and automated testing.
+The v1.0.1 release provides a functional command-line personal finance manager with transaction management, financial calculations, JSON persistence, improved validation and error handling, automated testing, and GitHub Actions continuous integration.
